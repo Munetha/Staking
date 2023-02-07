@@ -30,9 +30,6 @@ contract Staking {
     }
 
     function deposit(address _tokenAdress, uint _amount) public {
-      //  require(_isErc20(_tokenAdress), "Invalid token address");
-      
-        // StakingId memory staker = stakingId[msg.sender];
         require(stakingId[msg.sender].isStaked == false,"You're already staked");
         require(_amount > 0, "Amount not greater than zero");
         IERC20 erc20 = IERC20(_tokenAdress);
@@ -62,26 +59,6 @@ contract Staking {
     ) public view returns (StakingId memory) {
         return stakingId[_stakeid];
     }   
-
-    // function withdraw(address _stakeid) public {
-    //     require(address(this) == _stakeid,"Stake id is not existing");
-    //     require(now > 30 days,"1 Month duration not reached");
-    //     uint calculateReward = stakingId[_stakeid];
-       
-    // }
-
-    // function _isErc20(address tokenContract) internal returns (bool) {
-    //     bytes memory payload = abi.encodeWithSignature(
-    //         "supportsInterface(bytes4)",
-    //         type(IERC20).interfaceId
-    //     );
-    //     (bool success, bytes memory returnData) = tokenContract.call(payload);
-    //     if (!success) return false;
-
-    //     bool result = abi.decode(returnData, (bool));
-    //     return result;
-    // }
-
     function withdraw(address _stakeid) public {
       //  require(stakingId[_stakeid].amount != 0,"Insufficent balance");
         require (stakingId[_stakeid].isWithdrawed == false,"Already Withdrawed");
@@ -96,7 +73,3 @@ contract Staking {
 
     }
 }
-// stakeDuration = endDate-StartDate
-// noOfMnth =  stakeDuration / 1 mnth
-// intrestForOneMnth = amount * (rate/100)
-// totalReward = noOfMnth * intrestForOneMnth 
