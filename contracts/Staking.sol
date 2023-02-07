@@ -64,8 +64,6 @@ contract Staking {
         uint lockTime = stakingId[_stakeid].stakedTime + 60;// 1 min time + 2,592,000
         require (block.timestamp  > lockTime ,"1 Month duration not reached");
         uint stakeDuration = block.timestamp - stakingId[_stakeid].stakedTime;
-        console.log("Validation true");
-
         uint noOfMonth = stakeDuration / 2592000;
         uint interestForOneMonth = (stakingId[_stakeid].amount) * (interestRate/100);
         uint totalReward = noOfMonth * interestForOneMonth;
