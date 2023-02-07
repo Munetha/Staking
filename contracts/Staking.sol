@@ -59,17 +59,21 @@ contract Staking {
     ) public view returns (StakingId memory) {
         return stakingId[_stakeid];
     }   
-    function withdraw(address _stakeid) public {
-      //  require(stakingId[_stakeid].amount != 0,"Insufficent balance");
+   function withdraw(address _stakeid) public {
         require (stakingId[_stakeid].isWithdrawed == false,"Already Withdrawed");
         uint lockTime = stakingId[_stakeid].stakedTime + 60;// 1 min time + 2,592,000
         require (block.timestamp  > lockTime ,"1 Month duration not reached");
+        uint stakeDuration = block.timestamp - stakingId[_stakeid].stakedTime;
         console.log("Validation true");
-       // uint numMonths = 
+
+        uint noOfMonth = stakeDuration / 2592000;
+        uint interestForOneMonth = (stakingId[_stakeid].amount) * (interestRate/100);
+        uint totalReward = noOfMonth * interestForOneMonth;
         stakingId[_stakeid].rewardAmount = (stakingId[_stakeid].amount * (block.timestamp - stakingId[_stakeid].stakedTime) * interestRate ) / (31536000 * 100);
         stakingId[_stakeid].isWithdrawed = true;
         IERC20 erc20 = IERC20(stakingId[_stakeid].token);
         erc20.transferFrom(address(this),msg.sender,(stakingId[_stakeid].amount));
 
     }
+}
 }
