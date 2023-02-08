@@ -34,7 +34,7 @@ describe('Staking', () => {
         demoErc20 = await Demo.deployed();
     };
 
-    before(async () => {
+    beforeEach(async () => {
         signers = await ethers.getSigners();
 
         deployer = signers[0];
@@ -49,7 +49,9 @@ describe('Staking', () => {
     it('set reward contract address in staking', async () => {
         await staking.connect(deployer).setAdresses(erc20.address, erc721.address);
         let erc20Address = await staking.connect(staker).Erc20();
+        let nftAddress = await staking.connect(staker).nft();
         assert.equal(erc20Address,erc20.address);
+        assert.equal(nftAddress,erc721.address);
 
     });
 
@@ -68,7 +70,7 @@ describe('Staking', () => {
         let stakerBalance = await demoErc20.connect(staker).balanceOf(staker.address);
         let stakingContractBalance = await demoErc20.connect(staker).balanceOf(staking.address);
         assert.equal(1000,stakingContractBalance);
-        //assert.equal(stakerBalance,0);
+        assert.equal(stakerBalance,0);
     });
 
     it('check staking status', async () => {
@@ -78,24 +80,21 @@ describe('Staking', () => {
          await staking.connect(deployer).deposit(demoErc20.address,1000);
         let isstaked = await staking.connect(deployer).stakingId(deployer.address);
         assert.equal(isstaked.isStaked,true);
-
-
-
     });
 
-    it('withdraw token', async () => {
+    // it('withdraw token', async () => {
 
-    });
+    // });
 
-    it('check staking status after withdraw', async () => {
+    // it('check staking status after withdraw', async () => {
 
-    });
+    // });
 
-    it('clain reward', async () => {
+    // it('clain reward', async () => {
 
-    });
+    // });
 
-    it('check staking status after claim', async () => {
+    // it('check staking status after claim', async () => {
 
-    });
+    // });
 });
