@@ -1,1 +1,20 @@
 node_modules
+<<<<<<< HEAD
+=======
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+yarn.lock
+package-lock.json
+
+
+# Hardhat files
+cache
+artifacts
+.deps
+/.openzeppelin
+
+>>>>>>> 3fcf0eb4a9a973dea10af614d4e679f1917774bd
