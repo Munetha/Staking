@@ -1,6 +1,4 @@
 node_modules
-<<<<<<< HEAD
-=======
 .env
 coverage
 coverage.json
@@ -17,4 +15,3 @@ artifacts
 .deps
 /.openzeppelin
 
->>>>>>> 3fcf0eb4a9a973dea10af614d4e679f1917774bd
