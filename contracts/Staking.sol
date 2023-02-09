@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "hardhat/console.sol";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 contract Staking {
     address public Erc20;
@@ -67,20 +69,48 @@ contract Staking {
             stakingId[_stakeid].isWithdrawed == false,
             "Already Withdrawed"
         );
-        uint lockTime = stakingId[_stakeid].stakedTime + 60; // 1 min time + 2,592,000
+        require(
+            stakingId[_stakeid].token != address(0),
+            "You're not a depositer"
+        );
+     uint lockTime = stakingId[_stakeid].stakedTime + 60; // 1 min time + 2592000
         require(block.timestamp > lockTime, "1 Month duration not reached");
         uint stakeDuration = block.timestamp - stakingId[_stakeid].stakedTime;
         uint noOfMonth = stakeDuration / 2592000;
         uint interestForOneMonth = (stakingId[_stakeid].amount) *
             (interestRate / 100);
         uint totalReward = noOfMonth * interestForOneMonth;
-        stakingId[_stakeid].rewardAmount = totalReward;
+       stakingId[_stakeid].rewardAmount = totalReward;
         stakingId[_stakeid].isWithdrawed = true;
         IERC20 erc20 = IERC20(stakingId[_stakeid].token);
-        erc20.transferFrom(
-            address(this),
-            msg.sender,
-            (stakingId[_stakeid].amount)
+        erc20.transfer(msg.sender, (stakingId[_stakeid].amount));
+    }
+
+    function claim(address _stakeid) public {
+        require(
+            stakingId[_stakeid].token != address(0),
+            "You're not a depositer"
         );
+        require(
+            stakingId[_stakeid].isWithdrawed == true,
+            "You should withdraw first"
+        );
+        require(
+            stakingId[_stakeid].rewardClaimed == false,
+            "Reward already claimed"
+        );
+        // uint lockTime = stakingId[_stakeid].stakedTime + 60; // 1 min time + 2,592,000
+        // require(block.timestamp > lockTime, "1 Month duration not reached");
+        
+        IERC20 rewardErc20 = IERC20(Erc20);
+        rewardErc20.transferFrom(Erc20,msg.sender, stakingId[_stakeid].rewardAmount);
+
+        // uint stakeDuration = block.timestamp - stakingId[_stakeid].stakedTime;
+        // require(stakeDuration > 31536000,"1 year not reached");
+
+        // IERC721 rewardNft = IERC721(nft);
+        // rewardNft.transferFrom(nft,msg.sender, 1);
+         
+
     }
 }
