@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "hardhat/console.sol";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 contract Staking {
     address public Erc20;
@@ -99,17 +98,19 @@ contract Staking {
             stakingId[_stakeid].rewardClaimed == false,
             "Reward already claimed"
         );
-        // uint lockTime = stakingId[_stakeid].stakedTime + 60; // 1 min time + 2,592,000
-        // require(block.timestamp > lockTime, "1 Month duration not reached");
+        uint lockTime = stakingId[_stakeid].stakedTime + 2629743; // 1 min time + 2,592,000
+        require(block.timestamp > lockTime, "1 Month duration not reached");
         
         IERC20 rewardErc20 = IERC20(Erc20);
         rewardErc20.transferFrom(Erc20,msg.sender, stakingId[_stakeid].rewardAmount);
 
-        // uint stakeDuration = block.timestamp - stakingId[_stakeid].stakedTime;
-        // require(stakeDuration > 31536000,"1 year not reached");
+        uint stakeDuration = block.timestamp - stakingId[_stakeid].stakedTime;
+        if(stakeDuration > 31556926){
 
-        // IERC721 rewardNft = IERC721(nft);
-        // rewardNft.transferFrom(nft,msg.sender, 1);
+        }
+
+        IERC721 rewardNft = IERC721(nft);
+        rewardNft.transferFrom(nft,msg.sender, 1);
          
 
     }

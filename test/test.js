@@ -1,9 +1,6 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { mine } = require("@nomicfoundation/hardhat-network-helpers");
-import { time } from "@nomicfoundation/hardhat-network-helpers";
-
-
 describe('Staking', () => {
     let deployer;
     let staker;
@@ -90,7 +87,7 @@ describe('Staking', () => {
         await demoErc20.connect(deployer).mint(deployer.address,1000);
         await demoErc20.connect(deployer).approve(staking.address,1000);
         await staking.connect(deployer).deposit(demoErc20.address,1000);//2,592,000
-        await helpers.time.increase(2629743);
+        await mine(2629745);
         await staking.connect(deployer).withdraw(deployer.address);
         let withdrawed = await demoErc20.connect(staker).balanceOf(deployer.address);
         console.log(withdrawed);
@@ -102,6 +99,7 @@ describe('Staking', () => {
         await demoErc20.connect(deployer).mint(deployer.address,1000);
         await demoErc20.connect(deployer).approve(staking.address,1000);
         await staking.connect(deployer).deposit(demoErc20.address,1000);
+        await mine(2629745);
         await staking.connect(deployer).withdraw(deployer.address);
         let iswithdrawed = await staking.connect(deployer).stakingId(deployer.address);
         console.log(iswithdrawed);
@@ -110,30 +108,32 @@ describe('Staking', () => {
 
     });
 
-    // it('claim reward', async () => {
-    //     await staking.connect(deployer).setAdresses(erc20.address, erc721.address);        
-    //     await demoErc20.connect(deployer).mint(deployer.address,1000);
-    //     await demoErc20.connect(deployer).approve(staking.address,1000);
-    //     await staking.connect(deployer).deposit(demoErc20.address,1000);
-    //     await staking.connect(deployer).withdraw(deployer.address);
-    //     await staking.connect(deployer).claim(deployer.address);
-    //     await erc20.connect(deployer).mint(deployer.address,10);
-    //     let claimReward = await erc20.connect(deployer).balanceOf(deployer.address);
-    //     console.log(claimReward);
-    //     assert.equal(claimReward,10);        
+    it('claim reward', async () => {
+        await staking.connect(deployer).setAdresses(erc20.address, erc721.address);        
+        await demoErc20.connect(deployer).mint(deployer.address,1000);
+        await demoErc20.connect(deployer).approve(staking.address,1000);
+        await staking.connect(deployer).deposit(demoErc20.address,1000);
+        await mine(2629745);
+        await staking.connect(deployer).withdraw(deployer.address);
+        await staking.connect(deployer).claim(deployer.address);
+        await erc20.connect(deployer).mint(deployer.address,10);
+        let claimReward = await erc20.connect(deployer).balanceOf(deployer.address);
+        console.log(claimReward);
+        assert.equal(claimReward,10);        
 
-    // });
+    });
 
-    // it('check staking status after claim', async () => {
-    //     await staking.connect(deployer).setAdresses(erc20.address, erc721.address);        
-    //     await demoErc20.connect(deployer).mint(deployer.address,1000);
-    //     await demoErc20.connect(deployer).approve(staking.address,1000);
-    //     await staking.connect(deployer).deposit(demoErc20.address,1000);
-    //     await staking.connect(deployer).withdraw(deployer.address);
-    //     await staking.connect(deployer).claim(deployer.address);
-    //     await erc721.connect(deployer).mint(deployer.address,10);
-    //     let isnftClaimed = await staking.connect(deployer).stakingId(deployer.address);
-    //     assert.equal(isnftClaimed.isNftClaimed,true);
-    // });
+    it('check staking status after claim', async () => {
+        await staking.connect(deployer).setAdresses(erc20.address, erc721.address);        
+        await demoErc20.connect(deployer).mint(deployer.address,1000);
+        await demoErc20.connect(deployer).approve(staking.address,1000);
+        await staking.connect(deployer).deposit(demoErc20.address,1000);
+        await mine(2629745);
+        await staking.connect(deployer).withdraw(deployer.address);
+        await staking.connect(deployer).claim(deployer.address);
+        await erc721.connect(deployer).mint(deployer.address,10);
+        let isnftClaimed = await staking.connect(deployer).stakingId(deployer.address);
+        assert.equal(isnftClaimed.isNftClaimed,true);
+    });
 
 });
