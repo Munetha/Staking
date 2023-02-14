@@ -1,14 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "./customIERC20.sol";
+import "./customIERC721.sol";
+
 import "hardhat/console.sol";
 
 contract Staking {
-    address public Erc20;
-    address public nft;
+    customIERC20 public ERC20Reward;
+    customIERC721 public ERC721NFT;
+    address public admin;
     uint public stakeCount;
-    uint256 interestRate = 10 * 10 ** 2;
+    uint256 interestRate = 10;
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Not the owner");
+        _;
+    }
 
     struct StakingId {
         address user;
@@ -16,6 +27,7 @@ contract Staking {
         uint amount;
         uint rewardAmount;
         uint stakedTime;
+        uint unStakedTime;
         bool isStaked;
         bool isWithdrawed;
         bool rewardClaimed;
@@ -26,8 +38,8 @@ contract Staking {
     mapping(address => uint) public stakeId;
 
     function setAdresses(address _Erc20, address _nft) public {
-        Erc20 = _Erc20;
-        nft = _nft;
+        ERC20Reward = customIERC20(_Erc20);
+        ERC721NFT = customIERC721(_nft);
     }
 
     function deposit(address _tokenAdress, uint _amount) public {
@@ -36,18 +48,19 @@ contract Staking {
             "You're already staked"
         );
         require(_amount > 0, "Amount not greater than zero");
-        IERC20 erc20 = IERC20(_tokenAdress);
-        uint256 balance = erc20.balanceOf(msg.sender);
+        customIERC20 Erc20 = customIERC20(_tokenAdress);
+        uint256 balance = Erc20.balanceOf(msg.sender);
         require(balance >= _amount, "Insufficent balance");
-        uint256 allowance = erc20.allowance(msg.sender, address(this));
+        uint256 allowance = Erc20.allowance(msg.sender, address(this));
         require(allowance >= _amount, "Insufficent allowance");
-        erc20.transferFrom(msg.sender, address(this), _amount);
+        Erc20.transferFrom(msg.sender, address(this), _amount);
         stakingId[msg.sender] = StakingId(
             msg.sender,
             _tokenAdress,
             _amount,
             0,
             block.timestamp,
+            0,
             true,
             false,
             false,
@@ -72,46 +85,64 @@ contract Staking {
             stakingId[_stakeid].token != address(0),
             "You're not a depositer"
         );
-     uint lockTime = stakingId[_stakeid].stakedTime + 60; // 1 min time + 2592000
+        uint lockTime = stakingId[_stakeid].stakedTime + 60; // 1 min time + 2592000
         require(block.timestamp > lockTime, "1 Month duration not reached");
-        uint stakeDuration = block.timestamp - stakingId[_stakeid].stakedTime;
-        uint noOfMonth = stakeDuration / 2592000;
-        uint interestForOneMonth = (stakingId[_stakeid].amount) *
-            (interestRate / 100);
-        uint totalReward = noOfMonth * interestForOneMonth;
-       stakingId[_stakeid].rewardAmount = totalReward;
         stakingId[_stakeid].isWithdrawed = true;
-        IERC20 erc20 = IERC20(stakingId[_stakeid].token);
-        erc20.transfer(msg.sender, (stakingId[_stakeid].amount));
+        stakingId[_stakeid].unStakedTime = block.timestamp;
+        customIERC20 Erc20 = customIERC20(stakingId[_stakeid].token);
+        Erc20.transfer(msg.sender, (stakingId[_stakeid].amount));
     }
 
-    function claim(address _stakeid) public {
+    function calculate(address _stakeid, uint _stakeDuration) private returns (uint256) {
+
+        uint noOfMonth = _stakeDuration / 2629743;
+        uint interestForOneMonth = (stakingId[_stakeid].amount * interestRate) /
+            100;
+        uint totalReward = noOfMonth * interestForOneMonth;
+        stakingId[_stakeid].rewardAmount = totalReward;
+        console.log(totalReward);
+        // console.log(block.timestamp);
+        return stakingId[_stakeid].rewardAmount;
+    }
+
+    function issueToken() public onlyAdmin {
+        address stakeid = msg.sender;
         require(
-            stakingId[_stakeid].token != address(0),
+            stakingId[stakeid].token != address(0),
             "You're not a depositer"
         );
         require(
-            stakingId[_stakeid].isWithdrawed == true,
+            stakingId[stakeid].isWithdrawed == true,
             "You should withdraw first"
         );
         require(
-            stakingId[_stakeid].rewardClaimed == false,
+            stakingId[stakeid].rewardClaimed == false,
             "Reward already claimed"
         );
-        uint lockTime = stakingId[_stakeid].stakedTime + 2629743; // 1 min time + 2,592,000
-        require(block.timestamp > lockTime, "1 Month duration not reached");
-        
-        IERC20 rewardErc20 = IERC20(Erc20);
-        rewardErc20.transferFrom(Erc20,msg.sender, stakingId[_stakeid].rewardAmount);
+        uint stakeDuration = stakingId[stakeid].unStakedTime -
+            stakingId[stakeid].stakedTime;
+        uint reward = calculate(stakeid,stakeDuration);
+        customIERC20 Erc20 = customIERC20(ERC20Reward);
+        stakingId[stakeid].rewardClaimed = true;
+        Erc20.mint(stakingId[stakeid].user, reward);
 
-        uint stakeDuration = block.timestamp - stakingId[_stakeid].stakedTime;
-        if(stakeDuration > 31556926){
+        uint noOfyears = stakeDuration/31556926;
+        if(noOfyears > 0){
+            issueNft(stakeid,noOfyears);
+        }
+    }
+
+    function issueNft(address _stakeid,uint _noOfyear) private {
+        require(
+            stakingId[_stakeid].isNftClaimed == false,
+            "Reward already claimed"
+        );
+
+        customIERC721 nft = customIERC721(ERC721NFT);
+        stakingId[_stakeid].isNftClaimed = true;
+        for(uint i;i< _noOfyear;i++){
+            nft.safeMint(stakingId[_stakeid].user);
 
         }
-
-        IERC721 rewardNft = IERC721(nft);
-        rewardNft.transferFrom(nft,msg.sender, 1);
-         
-
     }
 }
