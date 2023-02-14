@@ -93,19 +93,19 @@ contract Staking {
         Erc20.transfer(msg.sender, (stakingId[_stakeid].amount));
     }
 
-    function calculate(address _stakeid, uint _stakeDuration) private returns (uint256) {
-
+    function calculate(
+        address _stakeid,
+        uint _stakeDuration
+    ) private returns (uint256) {
         uint noOfMonth = _stakeDuration / 2629743;
         uint interestForOneMonth = (stakingId[_stakeid].amount * interestRate) /
             100;
         uint totalReward = noOfMonth * interestForOneMonth;
         stakingId[_stakeid].rewardAmount = totalReward;
-        console.log(totalReward);
-        // console.log(block.timestamp);
         return stakingId[_stakeid].rewardAmount;
     }
 
-    function issueToken() public  {
+    function issueToken() public {
         address stakeid = msg.sender;
         require(
             stakingId[stakeid].token != address(0),
@@ -121,28 +121,27 @@ contract Staking {
         );
         uint stakeDuration = stakingId[stakeid].unStakedTime -
             stakingId[stakeid].stakedTime;
-        uint reward = calculate(stakeid,stakeDuration);
+        uint reward = calculate(stakeid, stakeDuration);
         customIERC20 Erc20 = customIERC20(ERC20Reward);
         stakingId[stakeid].rewardClaimed = true;
         Erc20.mint(stakingId[stakeid].user, reward);
 
-        uint noOfyears = stakeDuration/31556926;
-        if(noOfyears > 0){
-            issueNft(stakeid,noOfyears);
+        uint noOfyears = stakeDuration / 31556926;
+        if (noOfyears > 0) {
+            issueNft(stakeid, noOfyears);
         }
     }
 
-    function issueNft(address _stakeid,uint _noOfyear) private {
+    function issueNft(address _stakeid, uint _noOfyear) private {
         require(
             stakingId[_stakeid].isNftClaimed == false,
-            "Reward already claimed"
+            "Nft already claimed"
         );
 
         customIERC721 nft = customIERC721(ERC721NFT);
         stakingId[_stakeid].isNftClaimed = true;
-        for(uint i;i< _noOfyear;i++){
+        for (uint i; i < _noOfyear; i++) {
             nft.safeMint(stakingId[_stakeid].user);
-
         }
     }
 }

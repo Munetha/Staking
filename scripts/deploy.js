@@ -16,7 +16,7 @@ async function staking() {
 }
 
 async function main() {
-  staking()
+  staking();
 }
 
 async function rewardToken() {
@@ -50,10 +50,8 @@ async function demo() {
   console.log("demo address:", demo.address);
 }
 
-
-
 async function main() {
-  staking()
+  staking();
 }
 
 main()
