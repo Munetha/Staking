@@ -85,7 +85,7 @@ contract Staking {
             stakingId[_stakeid].token != address(0),
             "You're not a depositer"
         );
-        uint lockTime = stakingId[_stakeid].stakedTime + 60; // 1 min time + 2592000
+        uint lockTime = stakingId[_stakeid].stakedTime + 2629743; // 1 month check
         require(block.timestamp > lockTime, "1 Month duration not reached");
         stakingId[_stakeid].isWithdrawed = true;
         stakingId[_stakeid].unStakedTime = block.timestamp;
@@ -105,7 +105,7 @@ contract Staking {
         return stakingId[_stakeid].rewardAmount;
     }
 
-    function issueToken() public onlyAdmin {
+    function issueToken() public  {
         address stakeid = msg.sender;
         require(
             stakingId[stakeid].token != address(0),
