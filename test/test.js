@@ -154,7 +154,7 @@ describe("Staking", () => {
         assert.equal(balanceNFt, 1);
     });
 
-    it("issue the nft after 2 years", async () => {
+    it("issue the nft for 2 years", async () => {
         await staking.connect(deployer).setAdresses(erc20.address, erc721.address);
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
@@ -251,4 +251,16 @@ describe("Staking", () => {
         );
     });
 
+    it("check if the reward is already withdrawed", async () => {
+        await staking.connect(deployer).setAdresses(erc20.address, erc721.address);
+        await demoErc20.connect(deployer).mint(deployer.address, 1000);
+        await demoErc20.connect(deployer).approve(staking.address, 1000);
+        await staking.connect(deployer).deposit(demoErc20.address, 1000);
+        await mine(2629745);
+        await staking.connect(deployer).withdraw(deployer.address);
+        await staking.connect(deployer).issueToken();
+        await expect(
+            staking.connect(deployer).issueToken()
+        ).to.be.revertedWith("Reward already claimed");
+    });
 });
