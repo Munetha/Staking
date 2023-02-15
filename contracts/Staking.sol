@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
-import "./customIERC20.sol";
-import "./customIERC721.sol";
+import "../interfaces/customIERC20.sol";
+import "../interfaces/customIERC721.sol";
 
 import "hardhat/console.sol";
 
@@ -9,7 +9,6 @@ contract Staking {
     customIERC20 public ERC20Reward;
     customIERC721 public ERC721NFT;
     address public admin;
-    uint public stakeCount;
     uint256 interestRate = 10;
 
     constructor() {
@@ -21,6 +20,7 @@ contract Staking {
         _;
     }
 
+    // 
     struct StakingId {
         address user;
         address token;
@@ -35,9 +35,8 @@ contract Staking {
     }
 
     mapping(address => StakingId) public stakingId;
-    mapping(address => uint) public stakeId;
 
-    function setAdresses(address _Erc20, address _nft) public {
+    function setAdresses(address _Erc20, address _nft) public onlyAdmin {
         ERC20Reward = customIERC20(_Erc20);
         ERC721NFT = customIERC721(_nft);
     }
@@ -66,8 +65,6 @@ contract Staking {
             false,
             false
         );
-        stakeCount = stakeCount + 1;
-        stakeId[msg.sender] = stakeCount;
     }
 
     function getStakingDetails(

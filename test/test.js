@@ -1,9 +1,6 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
-const {
-    mine,
-    setBlockGasLimit,
-} = require("@nomicfoundation/hardhat-network-helpers");
+const {mine} = require("@nomicfoundation/hardhat-network-helpers");
 describe("Staking", () => {
     let deployer;
     let staker;
