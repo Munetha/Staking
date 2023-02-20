@@ -18,6 +18,11 @@ module.exports = {
       url: GEORLI_RPC,
       accounts: [PRIVATE_KEY],
       chainId: 5
+    },
+    ganache:{
+      url: "HTTP://127.0.0.1:7545",
+      //accounts: [PRIVATE_KEY],
+      chainId: 1337,
     }
   }
 };
