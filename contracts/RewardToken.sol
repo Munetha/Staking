@@ -8,6 +8,15 @@ contract RewardToken is ERC20, AccessControl {
     bytes32 public constant STAKE_CONTRACT_ROLE =
         keccak256("STAKE_CONTRACT_ROLE");
 
+    modifier isMinter() {
+        require(
+            hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+                hasRole(STAKE_CONTRACT_ROLE, msg.sender),
+            "Unauthorized"
+        );
+        _;
+    }
+
     constructor(address _stakeContractAddress) ERC20("RewardToken", "RTK") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(STAKE_CONTRACT_ROLE, _stakeContractAddress);
@@ -17,12 +26,11 @@ contract RewardToken is ERC20, AccessControl {
         _mint(to, amount);
     }
 
-    modifier isMinter() {
-        require(
-            hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
-                hasRole(STAKE_CONTRACT_ROLE, msg.sender),
-            "Unauthorized"
-        );
-        _;
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(AccessControl) returns (bool) {
+        return
+            interfaceId == type(IERC20).interfaceId ||
+            AccessControl.supportsInterface(interfaceId);
     }
 }

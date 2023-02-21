@@ -1,6 +1,7 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
-const {mine} = require("@nomicfoundation/hardhat-network-helpers");
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
+
 describe("Staking", () => {
     let deployer;
     let staker;
@@ -12,7 +13,7 @@ describe("Staking", () => {
 
     const deployStaking = async () => {
         const StakingFactory = await ethers.getContractFactory("Staking");
-        const Staking = await StakingFactory.deploy();
+        const Staking = await StakingFactory.deploy(15);
         staking = await Staking.deployed();
     };
 
@@ -83,7 +84,10 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        let isstaked = await staking.connect(deployer).stakingId(deployer.address);
+
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        let isstaked = await staking.connect(deployer).stakes(events[0].args.stakeId);
         assert.equal(isstaked.isStaked, true);
     });
 
@@ -92,11 +96,11 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000); //2,592,000
-        await mine(2629745);
-        await staking.connect(deployer).withdraw(deployer.address);
-        let withdrawed = await demoErc20
-            .connect(staker)
-            .balanceOf(deployer.address);
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(2630000);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
+        let withdrawed = await demoErc20.connect(staker).balanceOf(deployer.address);
         assert.equal(withdrawed, 1000);
     });
 
@@ -105,11 +109,11 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(2629745);
-        await staking.connect(deployer).withdraw(deployer.address);
-        let iswithdrawed = await staking
-            .connect(deployer)
-            .stakingId(deployer.address);
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(2630000);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
+        let iswithdrawed = await staking.connect(deployer).stakes(events[0].args.stakeId);
         assert.equal(iswithdrawed.isStaked, true);
     });
 
@@ -118,11 +122,13 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(2629800);
-        await staking.connect(deployer).withdraw(deployer.address);
-        await staking.connect(deployer).issueToken();
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(2630000);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
+        await staking.connect(deployer).issueToken(events[0].args.stakeId);
         let balance = await erc20.connect(deployer).balanceOf(deployer.address);
-        assert.equal(balance, 100);
+        assert.equal(balance, 150);
     });
 
     it("check staking status after issuing the token", async () => {
@@ -130,12 +136,12 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(2629745);
-        await staking.connect(deployer).withdraw(deployer.address);
-        await staking.connect(deployer).issueToken();
-        let RewardClaimed = await staking
-            .connect(deployer)
-            .stakingId(deployer.address);
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(2630000);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
+        await staking.connect(deployer).issueToken(events[0].args.stakeId);
+        let RewardClaimed = await staking.connect(deployer).stakes(events[0].args.stakeId);
         assert.equal(RewardClaimed.rewardClaimed, true);
     });
 
@@ -144,9 +150,11 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(31556950);
-        await staking.connect(deployer).withdraw(deployer.address);
-        await staking.connect(deployer).issueToken();
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(31556950);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
+        await staking.connect(deployer).issueToken(events[0].args.stakeId);
         let balanceNFt = await erc721.connect(deployer).balanceOf(deployer.address);
         assert.equal(balanceNFt, 1);
     });
@@ -156,9 +164,11 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(63113900);
-        await staking.connect(deployer).withdraw(deployer.address);
-        await staking.connect(deployer).issueToken();
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(63113900);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
+        await staking.connect(deployer).issueToken(events[0].args.stakeId);
         let balanceNFt = await erc721.connect(deployer).balanceOf(deployer.address);
         assert.equal(balanceNFt, 2);
     });
@@ -168,23 +178,13 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(63113900);
-        await staking.connect(deployer).withdraw(deployer.address);
-        await staking.connect(deployer).issueToken();
-        let NFTClaimed = await staking
-            .connect(deployer)
-            .stakingId(deployer.address);
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(63113900);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
+        await staking.connect(deployer).issueToken(events[0].args.stakeId);
+        let NFTClaimed = await staking.connect(deployer).stakes(events[0].args.stakeId);
         assert.equal(NFTClaimed.isNftClaimed, true);
-    });
-
-    it("check if the user cant deposit again", async () => {
-        await staking.connect(deployer).setAdresses(erc20.address, erc721.address);
-        await demoErc20.connect(deployer).mint(staker.address, 1000);
-        await demoErc20.connect(staker).approve(staking.address, 1000);
-        await staking.connect(staker).deposit(demoErc20.address, 1000);
-        await expect(
-            staking.connect(staker).deposit(demoErc20.address, 1000)
-        ).to.be.revertedWith("You're already staked");
     });
 
     it("check if the amount is greater than 0", async () => {
@@ -218,11 +218,13 @@ describe("Staking", () => {
         await staking.connect(deployer).setAdresses(erc20.address, erc721.address);
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
-        await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(2629745);
-        await staking.connect(deployer).withdraw(deployer.address);
+        await staking.connect(deployer).deposit(demoErc20.address, 1000); //2,592,000
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(2630000);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
         await expect(
-            staking.connect(deployer).withdraw(deployer.address)
+            staking.connect(deployer).withdraw(events[0].args.stakeId)
         ).to.be.revertedWith("Already Withdrawed");
     });
 
@@ -231,9 +233,11 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000); //2,592,000
-        await mine(262);
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(263);
         await expect(
-            staking.connect(deployer).withdraw(deployer.address)
+            staking.connect(deployer).withdraw(events[0].args.stakeId)
         ).to.be.revertedWith("1 Month duration not reached");
     });
 
@@ -241,9 +245,11 @@ describe("Staking", () => {
         await staking.connect(deployer).setAdresses(erc20.address, erc721.address);
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
-        await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(2629745);
-        await expect(staking.connect(deployer).issueToken()).to.be.revertedWith(
+        await staking.connect(deployer).deposit(demoErc20.address, 1000); //2,592,000
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(2630000);
+        await expect(staking.connect(deployer).issueToken(events[0].args.stakeId)).to.be.revertedWith(
             "You should withdraw first"
         );
     });
@@ -253,11 +259,13 @@ describe("Staking", () => {
         await demoErc20.connect(deployer).mint(deployer.address, 1000);
         await demoErc20.connect(deployer).approve(staking.address, 1000);
         await staking.connect(deployer).deposit(demoErc20.address, 1000);
-        await mine(2629745);
-        await staking.connect(deployer).withdraw(deployer.address);
-        await staking.connect(deployer).issueToken();
+        const filter = staking.filters.deposited();
+        const events = await staking.queryFilter(filter, 'latest');
+        await time.increase(63113900);
+        await staking.connect(deployer).withdraw(events[0].args.stakeId);
+        await staking.connect(deployer).issueToken(events[0].args.stakeId);
         await expect(
-            staking.connect(deployer).issueToken()
+            staking.connect(deployer).issueToken(events[0].args.stakeId)
         ).to.be.revertedWith("Reward already claimed");
     });
 });
