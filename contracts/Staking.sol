@@ -164,11 +164,12 @@ contract Staking {
         stakeDetails[msg.sender] = array;
     }
 
-    /// @notice issueNft provide the tranfering of the nft to the user
-    /// @dev it checks how much time the token is been invested and provide the
-    /// @param _stakeid provide the staked number
-    /// @param _noOfyear the time it is staked
-    /// @return uint the nft
+     /// @notice issueNft provide the tranfering of the nft to the user
+     /// @dev it checks how much time the token is been invested and provide the
+     /// @param _stakeid provide the staked number
+     /// @param _noOfyear the time it is staked
+     
+
     function issueNft(uint _stakeid, uint _noOfyear) internal {
         require(stakes[_stakeid].isNftClaimed == false, "Nft already claimed");
 

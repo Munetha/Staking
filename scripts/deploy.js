@@ -5,7 +5,7 @@ async function main() {
   const RewardTokenFactory = await ethers.getContractFactory("RewardToken");
   const RewardNFTFactory = await ethers.getContractFactory("RewardNFT");
   const DemoFactory = await ethers.getContractFactory("Demo");
-  const staking = await StakingFactory.deploy();
+  const staking = await StakingFactory.deploy(15);
   await staking.deployed();
   const RewardToken = await RewardTokenFactory.deploy(staking.address);
   await RewardToken.deployed();

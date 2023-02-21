@@ -1,17 +1,44 @@
-QUICK START
-npm install
+# Staking contract
+ This is a staking contract it accepts all kind of ERC20 tokens.
+ The tokens are locked in the contract 1 month and after 1 month the user can withdraw at any time and bonus ERC20 token is given.The bonus is given based on how much time the token is staked.If the tokens are staked in the contract for 1 year then we get a bonus NFT. 
 
-write .env file for the required inputs
+## Installation
 
-npx hardhat run scripts/deploy.js --network NETWORK To Deploy Code 
-npx hardhat test To Test Code
+### **Running Instructions**
 
-Introduction
+- Copy project to your directory  
 
-This staking contract accepts ERC20 tokens for staking and the rewards are claimable after 1 month cap
+  ``git clone https://github.com/Munetha/Staking/tree/master``
 
-The contract calculate the rewards monthly until it is staked
+- Install project dependencies
 
-An NFT is provided after 1 year time cap
+   ``npm install``
 
-Users needs to approve tokens at the staking contract address
+- Start project  
+
+  ``npm run start``
+
+### **For Testing** 
+npx hardhat test 
+
+### **For deployment**
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#### For Localhost
+
+- Run node locally
+
+       ``npx hardhat node``
+
+- Open a new terminal and paste the below command
+
+        ``npx hardhat run --network localhost scripts/deploy.js``
+
+#### For georli 
+
+
+        ``npx hardhat run --network georli scripts/deploy.js``
+
+#### For Polygon mumbai
+
+        ``npx hardhat run --network polygon_mumbai scripts/deploy.js``
