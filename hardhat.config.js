@@ -1,7 +1,8 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config();
 
-const GEORLI_RPC = "https://eth-goerli.g.alchemy.com/v2/d976tGIQLf0bYtN2nXYAR5gvYEPhppcO";
-const PRIVATE_KEY = "8184de675adc0c2f224e9fcc4cc18e8d9948084471082289c28d7c59129a7703";
+const GEORLI_RPC = process.env.GEORLI_RPC;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 module.exports = {
   solidity: {

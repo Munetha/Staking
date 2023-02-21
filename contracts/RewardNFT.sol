@@ -6,21 +6,12 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract RewardNFT is ERC721, AccessControl {
+    using Counters for Counters.Counter;
+
     bytes32 public constant STAKE_CONTRACT_ROLE =
         keccak256("STAKE_CONTRACT_ROLE ");
 
-    using Counters for Counters.Counter;
     Counters.Counter private _tokenIdTracker;
-
-    constructor(address _stakeContractAddress) ERC721("RewardNFT", "RNFT") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(STAKE_CONTRACT_ROLE, _stakeContractAddress);
-    }
-
-    function safeMint(address to) public isMinter {
-        _mint(to, _tokenIdTracker.current());
-        _tokenIdTracker.increment();
-    }
 
     modifier isMinter() {
         require(
@@ -29,6 +20,16 @@ contract RewardNFT is ERC721, AccessControl {
             "Unauthorized"
         );
         _;
+    }
+
+    constructor(address _stakeContractAddress) ERC721("RewardNFT", "RNFT") {
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(STAKE_CONTRACT_ROLE, _stakeContractAddress);
+    }
+
+    function mint(address to) public isMinter {
+        _mint(to, _tokenIdTracker.current());
+        _tokenIdTracker.increment();
     }
 
     function supportsInterface(
