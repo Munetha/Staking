@@ -22,13 +22,6 @@ module.exports = {
       accounts: [PRIVATE_KEY],
       chainId: 5
     },
-<<<<<<< HEAD
-    ganache:{
-      url: "HTTP://127.0.0.1:7545",
-      //accounts: [PRIVATE_KEY],
-      chainId: 1337,
-    }
-=======
     localhost: {
       url:LOCAL_HOST_URL,
       chainid: 31337,
@@ -37,6 +30,5 @@ module.exports = {
       url:POLYGON_MUMBAI_URL,
       accounts: [PRIVATE_KEY],
     },
->>>>>>> 84f3f771a672136b1aec106d0e3515fb2e9d78f9
   }
 };
